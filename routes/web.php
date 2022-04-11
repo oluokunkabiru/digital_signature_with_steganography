@@ -31,5 +31,5 @@ Route::post('decodeme', 'EncryptionController@decodeSignature')->name('decodeme'
 Route::group(['prefix' => '/'], function () {
     Voyager::routes();
     Route::resource('signature', 'SignatureController');
-    Route::resource('verifications', 'VerificationController');
+    Route::resource('verification', 'VerificationController');
 });

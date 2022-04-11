@@ -9,7 +9,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 @stop
 
-@section('page_title', __('Create New Signature'))
+@section('page_title', __('Verification the  Signature'))
 
 @section('page_header')
     <h1 class="page-title">
@@ -28,7 +28,7 @@
                     <!-- form start -->
                     <form role="form"
                             class="form-edit-add"
-                            action="{{ $edit ? route('signature.update') : route('signature.store') }}"
+                            action="{{ $edit ? route('verification.update') : route('verification.store') }}"
                             method="POST" enctype="multipart/form-data">
                         <!-- PUT Method if we are editing -->
                         {{-- @if($edit)
