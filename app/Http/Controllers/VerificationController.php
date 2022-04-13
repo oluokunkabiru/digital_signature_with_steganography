@@ -51,6 +51,8 @@ class VerificationController extends Controller
     {
         //
         // return $request;
+        // return  redirect()->back()->with(['message'=>"Trying to get error message", 'alert-type'=>"info"]);
+       
         $verification = new Verification();
         $cover = $request->file("stego");
         $key = $request->file("public")[0];
