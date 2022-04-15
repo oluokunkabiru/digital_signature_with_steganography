@@ -38,16 +38,7 @@ class SignatureController extends Controller
     function verify($my_signed_data,$public_key)
     {
         $base64 = base64_decode($my_signed_data);
-        // $decodeWWithUser = explode("[villageboy]", $encodeWWithUser);
-        // return dd($encodeWWithUser);
-        // $signMessage = $decodeWWithUser[0];
-        // return dd($signMessage);
-        // $userDetails = $decodeWWithUser[1];
-        // return $userDetails;
-        // $userdatails = explode("[vb]", $userDetails);
-    // return print_r($userdatails);
-    // return $base64;
-
+        
         list($plain_data,$old_sig) = explode("----SIGNATURE:----", $base64);
         openssl_public_decrypt($old_sig, $decrypted_sig, $public_key);
         $data_hash = md5($plain_data);
@@ -69,6 +60,11 @@ class SignatureController extends Controller
     public function store(Request $request)
     {
         //
+        $request->validate([
+            'cover' =>'required|image|mimes:png,jpg, jpeg',
+            'message' => 'required'
+        ]);
+
         $signatures = new Signature();
         $cover = $request->file("cover");
         $hidden =$request->file("message")[0];
@@ -90,14 +86,9 @@ class SignatureController extends Controller
         $base64 = 'data:'.$type. ';base64,' . base64_encode($load);
 
        
+        // return json_decode(Auth::user()->private, true)[0]['download_link'];
 
-        $encodeDatail =  $this->sign($base64,  file_get_contents("storage/". Auth::user()->private));
-        
-        // echo $encodeDatail ."<br><br>";
-        // $data = "";
-        $verify = $this->verify($encodeDatail, file_get_contents("storage/". Auth::user()->public));
-        
-        // print_r ($verify);
+        $encodeDatail =  $this->sign($base64,  file_get_contents('storage/'.json_decode(Auth::user()->private, true)[0]['download_link']));
 
         // return ;
 
@@ -108,7 +99,9 @@ class SignatureController extends Controller
         $payloadByteSize = count($payloadByteArr);
         // return $payloadByteSize;
         if ($payloadByteSize > $maxPayloadByte) {
-            die('The payload is larger than the cryptcontainer.');
+            // die('The payload is larger than the cryptcontainer.');
+            return redirect()->back()->with(['message'=>"The payload is larger than the carrier container, please reduce the file size", 'alert-type'=>'error']);
+
         }
 
                 //Read carrier medium in file and "open" as image
@@ -187,7 +180,7 @@ class SignatureController extends Controller
         ]));
 
         imagedestroy($img);
-        $signaturename = time() .".txt";
+        $signaturename = time() .".sign";
         $signature = "signatures/". $signaturename;
         Storage::disk('public')->put($signature, $encodeDatail);
         $signatures->signature = json_encode(array([
@@ -203,7 +196,7 @@ class SignatureController extends Controller
         $cover->storeAs("cover", $file_name, 'public');
         $signatures->cover=$coverpath;
         $signatures->save();
-        return redirect()->route('voyager.signatures.index');
+        return redirect()->route('voyager.signatures.index')->with(['message'=>'Signature create successfully', 'alert-type'=>'success']);
 
 
     }
