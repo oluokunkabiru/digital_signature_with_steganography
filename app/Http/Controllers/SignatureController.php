@@ -38,7 +38,7 @@ class SignatureController extends Controller
     function verify($my_signed_data,$public_key)
     {
         $base64 = base64_decode($my_signed_data);
-        
+
         list($plain_data,$old_sig) = explode("----SIGNATURE:----", $base64);
         openssl_public_decrypt($old_sig, $decrypted_sig, $public_key);
         $data_hash = md5($plain_data);
@@ -65,10 +65,12 @@ class SignatureController extends Controller
             'message' => 'required'
         ]);
 
+        // return $request;
+
         $signatures = new Signature();
         $cover = $request->file("cover");
         $hidden =$request->file("message")[0];
-        
+
         // return dd($hidden->getMimeType());
         $type = $hidden->getMimeType();
         $src_container = $cover;
@@ -81,11 +83,11 @@ class SignatureController extends Controller
         $maxPayloadByte = $container_size[0] * $container_size[1] - 4;
         //Write payload to byte array and calculate size
         $load = file_get_contents($src_payload);
-        
+
         // return $hidden;
         $base64 = 'data:'.$type. ';base64,' . base64_encode($load);
 
-       
+
         // return json_decode(Auth::user()->private, true)[0]['download_link'];
 
         $encodeDatail =  $this->sign($base64,  file_get_contents('storage/'.json_decode(Auth::user()->private, true)[0]['download_link']));
@@ -180,6 +182,7 @@ class SignatureController extends Controller
         ]));
 
         imagedestroy($img);
+
         $signaturename = time() .".sign";
         $signature = "signatures/". $signaturename;
         Storage::disk('public')->put($signature, $encodeDatail);
@@ -187,14 +190,18 @@ class SignatureController extends Controller
             'download_link' => $signature,
             'original_name' => $signaturename,
         ]));
-       
-        
+
+
 
 
         $file_name=time().$cover->getClientOriginalName();
+
         $coverpath = "cover/".$file_name;
+
         $cover->storeAs("cover", $file_name, 'public');
+
         $signatures->cover=$coverpath;
+        
         $signatures->save();
         return redirect()->route('voyager.signatures.index')->with(['message'=>'Signature create successfully', 'alert-type'=>'success']);
 
